@@ -26,7 +26,7 @@ make test
 ## Utilizzo
 
 ```bash
-./yespower-miner <pool_url> <pool_port> <username> [version] [N] [r]
+./yespower-miner <pool_url> <pool_port> <username> [password] [version] [N] [r]
 ```
 
 Esempi:
@@ -34,14 +34,18 @@ Esempi:
 # Utilizzo base
 ./yespower-miner stratum.pool.com 3333 your_wallet_address
 
+# Utilizzo con password
+./yespower-miner stratum.pool.com 3333 your_wallet_address yourpassword
+
 # Utilizzo con parametri YesPower personalizzati
-./yespower-miner stratum.pool.com 3333 your_wallet_address 1.0 2048 8
+./yespower-miner stratum.pool.com 3333 your_wallet_address x 1.0 2048 8
 ```
 
 ### Parametri:
 - `pool_url`: URL del mining pool
 - `pool_port`: Porta del mining pool
 - `username`: Il tuo indirizzo wallet o username
+- `[password]`: La tua password (predefinito: x)
 - `[version]`: Versione YesPower: 0.5 o 1.0 (predefinito: 1.0)
 - `[N]`: Parametro N di YesPower (predefinito: 2048)
 - `[r]`: Parametro r di YesPower (predefinito: 8)

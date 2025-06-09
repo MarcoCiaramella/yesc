@@ -16,13 +16,15 @@ void signal_handler(int sig) {
 }
 
 void print_usage(const char* program) {
-    printf("Usage: %s <pool_url> <pool_port> <username> [version] [N] [r]\n", program);
+    printf("Usage: %s <pool_url> <pool_port> <username> [password] [version] [N] [r]\n", program);
     printf("Example: %s stratum.pool.com 3333 your_wallet_address\n", program);
-    printf("Example with yespower params: %s stratum.pool.com 3333 your_wallet_address 1.0 2048 8\n", program);
+    printf("Example with password: %s stratum.pool.com 3333 your_wallet_address yourpassword\n", program);
+    printf("Example with yespower params: %s stratum.pool.com 3333 your_wallet_address x 1.0 2048 8\n", program);
     printf("\nParameters:\n");
     printf("  pool_url   - Mining pool URL\n");
     printf("  pool_port  - Mining pool port\n");
     printf("  username   - Your wallet address or username\n");
+    printf("  [password] - Your password (default: x)\n");
     printf("  [version]  - YesPower version: 0.5 or 1.0 (default: 1.0)\n");
     printf("  [N]        - YesPower N parameter (default: 2048)\n");
     printf("  [r]        - YesPower r parameter (default: 8)\n");
@@ -43,7 +45,13 @@ int main(int argc, char* argv[]) {
     strncpy(client.config.pool_url, argv[1], MAX_URL_LEN - 1);
     client.config.pool_port = atoi(argv[2]);
     strncpy(client.config.username, argv[3], MAX_USER_LEN - 1);
-    strcpy(client.config.password, "x"); // Default password
+    
+    // Use provided password if available, otherwise default to "x"
+    if (argc >= 5) {
+        strncpy(client.config.password, argv[4], MAX_PASS_LEN - 1);
+    } else {
+        strcpy(client.config.password, "x"); // Default password
+    }
 
     // Configure yespower parameters with defaults
     client.config.yespower_params.version = YESPOWER_1_0;
@@ -52,9 +60,15 @@ int main(int argc, char* argv[]) {
     client.config.yespower_params.pers = NULL;
     client.config.yespower_params.perslen = 0;
     
+    // Parse optional yespower parameters - adjust position based on password parameter
+    int param_offset = 5; // Base offset when password is provided
+    if (argc == 4) {
+        param_offset = 4; // No password provided, parameters start at position 4
+    }
+    
     // Parse optional yespower parameters
-    if (argc >= 5) {
-        float version = atof(argv[4]);
+    if (argc >= param_offset) {
+        float version = atof(argv[param_offset - 1]);
         if (version == 0.5)
             client.config.yespower_params.version = YESPOWER_0_5;
         else if (version == 1.0)
@@ -63,16 +77,16 @@ int main(int argc, char* argv[]) {
             printf("Warning: Unrecognized version %.1f, using default 1.0\n", version);
     }
     
-    if (argc >= 6) {
-        client.config.yespower_params.N = atoi(argv[5]);
+    if (argc >= param_offset + 1) {
+        client.config.yespower_params.N = atoi(argv[param_offset]);
         if (client.config.yespower_params.N < 1024) {
             printf("Warning: N value too small, setting to 1024\n");
             client.config.yespower_params.N = 1024;
         }
     }
     
-    if (argc >= 7) {
-        client.config.yespower_params.r = atoi(argv[6]);
+    if (argc >= param_offset + 2) {
+        client.config.yespower_params.r = atoi(argv[param_offset + 1]);
         if (client.config.yespower_params.r < 8) {
             printf("Warning: r value too small, setting to 8\n");
             client.config.yespower_params.r = 8;
@@ -89,8 +103,9 @@ int main(int argc, char* argv[]) {
     signal(SIGTERM, signal_handler);
 
     printf("YesPower Stratum Miner v1.0\n");
-    printf("Connecting to %s:%d with user %s\n", 
-           client.config.pool_url, client.config.pool_port, client.config.username);
+    printf("Connecting to %s:%d with user %s, password %s\n", 
+           client.config.pool_url, client.config.pool_port, 
+           client.config.username, client.config.password);
     printf("YesPower params: version=%.1f, N=%u, r=%u\n",
            client.config.yespower_params.version * 0.1,
            client.config.yespower_params.N,
