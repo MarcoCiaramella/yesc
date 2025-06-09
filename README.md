@@ -14,7 +14,7 @@ Un client di mining Stratum che utilizza l'algoritmo YesPower per il mining di c
 
 ```bash
 # Clona o scarica il codice
-cd minerc
+cd yesc
 
 # Compila il progetto
 make
@@ -26,13 +26,25 @@ make test
 ## Utilizzo
 
 ```bash
-./yespower-miner <pool_url> <pool_port> <wallet_address>
+./yespower-miner <pool_url> <pool_port> <username> [version] [N] [r]
 ```
 
-Esempio:
+Esempi:
 ```bash
-./yespower-miner stratum.pool.com 3333 your_wallet_address_here
+# Utilizzo base
+./yespower-miner stratum.pool.com 3333 your_wallet_address
+
+# Utilizzo con parametri YesPower personalizzati
+./yespower-miner stratum.pool.com 3333 your_wallet_address 1.0 2048 8
 ```
+
+### Parametri:
+- `pool_url`: URL del mining pool
+- `pool_port`: Porta del mining pool
+- `username`: Il tuo indirizzo wallet o username
+- `[version]`: Versione YesPower: 0.5 o 1.0 (predefinito: 1.0)
+- `[N]`: Parametro N di YesPower (predefinito: 2048)
+- `[r]`: Parametro r di YesPower (predefinito: 8)
 
 ## Configurazione YesPower
 
@@ -41,7 +53,7 @@ Il miner è configurato di default per YesPower 1.0 con parametri:
 - r = 8
 - version = 1.0
 
-Puoi modificare questi parametri nel file `main.c` nella sezione di configurazione.
+Puoi modificare questi parametri direttamente dalla riga di comando come mostrato negli esempi di utilizzo.
 
 ## Pool Supportate
 

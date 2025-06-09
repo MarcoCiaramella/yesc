@@ -15,10 +15,22 @@ void signal_handler(int sig) {
     }
 }
 
+void print_usage(const char* program) {
+    printf("Usage: %s <pool_url> <pool_port> <username> [version] [N] [r]\n", program);
+    printf("Example: %s stratum.pool.com 3333 your_wallet_address\n", program);
+    printf("Example with yespower params: %s stratum.pool.com 3333 your_wallet_address 1.0 2048 8\n", program);
+    printf("\nParameters:\n");
+    printf("  pool_url   - Mining pool URL\n");
+    printf("  pool_port  - Mining pool port\n");
+    printf("  username   - Your wallet address or username\n");
+    printf("  [version]  - YesPower version: 0.5 or 1.0 (default: 1.0)\n");
+    printf("  [N]        - YesPower N parameter (default: 2048)\n");
+    printf("  [r]        - YesPower r parameter (default: 8)\n");
+}
+
 int main(int argc, char* argv[]) {
-    if (argc != 4) {
-        printf("Usage: %s <pool_url> <pool_port> <username>\n", argv[0]);
-        printf("Example: %s stratum.pool.com 3333 your_wallet_address\n", argv[0]);
+    if (argc < 4) {
+        print_usage(argv[0]);
         return 1;
     }
 
@@ -33,12 +45,39 @@ int main(int argc, char* argv[]) {
     strncpy(client.config.username, argv[3], MAX_USER_LEN - 1);
     strcpy(client.config.password, "x"); // Default password
 
-    // Configure yespower parameters (example for yespower 1.0)
+    // Configure yespower parameters with defaults
     client.config.yespower_params.version = YESPOWER_1_0;
     client.config.yespower_params.N = 2048;
     client.config.yespower_params.r = 8;
     client.config.yespower_params.pers = NULL;
     client.config.yespower_params.perslen = 0;
+    
+    // Parse optional yespower parameters
+    if (argc >= 5) {
+        float version = atof(argv[4]);
+        if (version == 0.5)
+            client.config.yespower_params.version = YESPOWER_0_5;
+        else if (version == 1.0)
+            client.config.yespower_params.version = YESPOWER_1_0;
+        else
+            printf("Warning: Unrecognized version %.1f, using default 1.0\n", version);
+    }
+    
+    if (argc >= 6) {
+        client.config.yespower_params.N = atoi(argv[5]);
+        if (client.config.yespower_params.N < 1024) {
+            printf("Warning: N value too small, setting to 1024\n");
+            client.config.yespower_params.N = 1024;
+        }
+    }
+    
+    if (argc >= 7) {
+        client.config.yespower_params.r = atoi(argv[6]);
+        if (client.config.yespower_params.r < 8) {
+            printf("Warning: r value too small, setting to 8\n");
+            client.config.yespower_params.r = 8;
+        }
+    }
 
     // Initialize mutex
     pthread_mutex_init(&client.job_mutex, NULL);
