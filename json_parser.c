@@ -33,21 +33,150 @@ int parse_authorize_response(const char* json) {
 }
 
 int parse_job_notification(const char* json, stratum_job_t* job) {
-    // Simplified parsing of mining.notify message
-    // This should parse: job_id, prevhash, coinb1, coinb2, merkle_branches,
-    // version, nbits, ntime, clean_jobs
+    // Parse JSON for mining.notify message
+    char* params_start = strstr(json, "\"params\":[");
+    if (!params_start) return -1;
     
-    // For demonstration, setting some default values
-    strcpy(job->job_id, "test_job");
-    strcpy(job->prevhash, "0000000000000000000000000000000000000000000000000000000000000000");
-    strcpy(job->coinb1, "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff");
-    strcpy(job->coinb2, "ffffffff0100f2052a01000000434104");
-    strcpy(job->version, "00000001");
-    strcpy(job->nbits, "1d00ffff");
-    strcpy(job->ntime, "4f8b1c5a");
-    strcpy(job->target, "0000ffff00000000000000000000000000000000000000000000000000000000");
-    job->clean_jobs = true;
+    params_start += 9; // Skip "params":[ 
+
+    // Extract job_id (first parameter)
+    char* job_id_start = strchr(params_start, '"');
+    if (!job_id_start) return -1;
+    job_id_start++; // Skip opening quote
+    
+    char* job_id_end = strchr(job_id_start, '"');
+    if (!job_id_end) return -1;
+    
+    size_t len = job_id_end - job_id_start;
+    if (len >= sizeof(job->job_id)) return -1;
+    strncpy(job->job_id, job_id_start, len);
+    job->job_id[len] = '\0';
+    
+    // Move to next parameter (prevhash)
+    params_start = job_id_end + 2; // Skip quote and comma
+    char* prevhash_start = strchr(params_start, '"');
+    if (!prevhash_start) return -1;
+    prevhash_start++;
+    
+    char* prevhash_end = strchr(prevhash_start, '"');
+    if (!prevhash_end) return -1;
+    
+    len = prevhash_end - prevhash_start;
+    if (len >= sizeof(job->prevhash)) return -1;
+    strncpy(job->prevhash, prevhash_start, len);
+    job->prevhash[len] = '\0';
+    
+    // Extract coinb1
+    params_start = prevhash_end + 2;
+    char* coinb1_start = strchr(params_start, '"');
+    if (!coinb1_start) return -1;
+    coinb1_start++;
+    
+    char* coinb1_end = strchr(coinb1_start, '"');
+    if (!coinb1_end) return -1;
+    
+    len = coinb1_end - coinb1_start;
+    if (len >= sizeof(job->coinb1)) return -1;
+    strncpy(job->coinb1, coinb1_start, len);
+    job->coinb1[len] = '\0';
+    
+    // Extract coinb2
+    params_start = coinb1_end + 2;
+    char* coinb2_start = strchr(params_start, '"');
+    if (!coinb2_start) return -1;
+    coinb2_start++;
+    
+    char* coinb2_end = strchr(coinb2_start, '"');
+    if (!coinb2_end) return -1;
+    
+    len = coinb2_end - coinb2_start;
+    if (len >= sizeof(job->coinb2)) return -1;
+    strncpy(job->coinb2, coinb2_start, len);
+    job->coinb2[len] = '\0';
+    
+    // Extract merkle_branches (array of strings)
+    params_start = coinb2_end + 2;
+    char* merkle_start = strchr(params_start, '[');
+    if (!merkle_start) return -1;
+    merkle_start++;
+    
+    char* merkle_end = strchr(merkle_start, ']');
+    if (!merkle_end) return -1;
+    
+    // Parse each merkle branch
     job->merkle_count = 0;
+    char* branch_start = merkle_start;
+    
+    while (branch_start < merkle_end && job->merkle_count < 32) {
+        branch_start = strchr(branch_start, '"');
+        if (!branch_start || branch_start >= merkle_end) break;
+        branch_start++;
+        
+        char* branch_end = strchr(branch_start, '"');
+        if (!branch_end || branch_end >= merkle_end) break;
+        
+        len = branch_end - branch_start;
+        if (len >= sizeof(job->merkle_branches[0])) return -1;
+        strncpy(job->merkle_branches[job->merkle_count], branch_start, len);
+        job->merkle_branches[job->merkle_count][len] = '\0';
+        job->merkle_count++;
+        
+        branch_start = branch_end + 1;
+    }
+    
+    // Extract version
+    params_start = merkle_end + 2;
+    char* version_start = strchr(params_start, '"');
+    if (!version_start) return -1;
+    version_start++;
+    
+    char* version_end = strchr(version_start, '"');
+    if (!version_end) return -1;
+    
+    len = version_end - version_start;
+    if (len >= sizeof(job->version)) return -1;
+    strncpy(job->version, version_start, len);
+    job->version[len] = '\0';
+    
+    // Extract nbits
+    params_start = version_end + 2;
+    char* nbits_start = strchr(params_start, '"');
+    if (!nbits_start) return -1;
+    nbits_start++;
+    
+    char* nbits_end = strchr(nbits_start, '"');
+    if (!nbits_end) return -1;
+    
+    len = nbits_end - nbits_start;
+    if (len >= sizeof(job->nbits)) return -1;
+    strncpy(job->nbits, nbits_start, len);
+    job->nbits[len] = '\0';
+    
+    // Extract ntime
+    params_start = nbits_end + 2;
+    char* ntime_start = strchr(params_start, '"');
+    if (!ntime_start) return -1;
+    ntime_start++;
+    
+    char* ntime_end = strchr(ntime_start, '"');
+    if (!ntime_end) return -1;
+    
+    len = ntime_end - ntime_start;
+    if (len >= sizeof(job->ntime)) return -1;
+    strncpy(job->ntime, ntime_start, len);
+    job->ntime[len] = '\0';
+    
+    // Extract clean_jobs (boolean)
+    params_start = ntime_end + 2;
+    if (strstr(params_start, "true")) {
+        job->clean_jobs = true;
+    } else {
+        job->clean_jobs = false;
+    }
+    
+    // Convert nbits to target (simplified conversion)
+    snprintf(job->target, sizeof(job->target), 
+            "0000%s00000000000000000000000000000000000000000000000000000000", job->nbits+4);
     
     return 0;
 }
