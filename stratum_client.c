@@ -173,12 +173,65 @@ void* stratum_receiver_thread(void* arg) {
         }
         else if (strstr(buffer, "\"result\":true")) {
             client->shares_accepted++;
-            printf("Share accepted! (Total: %llu/%llu)\n", 
-                   client->shares_accepted, client->shares_submitted);
+            
+            // Estrai eventuali informazioni aggiuntive come la difficoltà
+            char* difficulty_str = NULL;
+            if (strstr(buffer, "\"difficulty\":")) {
+                difficulty_str = strstr(buffer, "\"difficulty\":");
+                if (difficulty_str) {
+                    difficulty_str += 12; // Skip "difficulty":
+                }
+            }
+            
+            printf("\033[32mShare ACCETTATO! (%llu/%llu) - %.2f%%\033[0m", 
+                   client->shares_accepted, 
+                   client->shares_submitted,
+                   (client->shares_submitted > 0) ? 
+                       (100.0 * client->shares_accepted / client->shares_submitted) : 0);
+            
+            if (difficulty_str) {
+                // Estraiamo il valore di difficoltà fino alla virgola o chiusura di parentesi
+                char diff_value[32] = {0};
+                int i = 0;
+                while (i < 31 && difficulty_str[i] && difficulty_str[i] != ',' && difficulty_str[i] != '}') {
+                    diff_value[i] = difficulty_str[i];
+                    i++;
+                }
+                diff_value[i] = '\0';
+                printf(" - Difficoltà: %s", diff_value);
+            }
+            printf("\n");
         }
         else if (strstr(buffer, "\"result\":false")) {
             client->shares_rejected++;
-            printf("Share rejected! (Total rejected: %llu)\n", client->shares_rejected);
+            
+            // Estrai il messaggio di errore se presente
+            char* error_msg = strstr(buffer, "\"error\":");
+            if (error_msg) {
+                error_msg = strstr(error_msg, "\"message\":");
+                if (error_msg) {
+                    error_msg += 11; // Skip "message":
+                    if (*error_msg == '"') error_msg++; // Skip quote
+                    
+                    // Estrai il messaggio fino alla virgola o chiusura di parentesi
+                    char msg_buffer[128] = {0};
+                    int i = 0;
+                    while (i < 127 && error_msg[i] && error_msg[i] != '"' && error_msg[i] != '}') {
+                        msg_buffer[i] = error_msg[i];
+                        i++;
+                    }
+                    msg_buffer[i] = '\0';
+                    
+                    printf("\033[31mShare RIFIUTATO! (%llu/%llu) - Errore: %s\033[0m\n",
+                           client->shares_rejected, client->shares_submitted, msg_buffer);
+                } else {
+                    printf("\033[31mShare RIFIUTATO! (%llu/%llu)\033[0m\n", 
+                           client->shares_rejected, client->shares_submitted);
+                }
+            } else {
+                printf("\033[31mShare RIFIUTATO! (%llu/%llu)\033[0m\n", 
+                       client->shares_rejected, client->shares_submitted);
+            }
         }
     }
     
