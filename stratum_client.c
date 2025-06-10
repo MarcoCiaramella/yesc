@@ -105,8 +105,6 @@ int stratum_authorize(stratum_client_t* client) {
     }
     response[received] = '\0';
 
-    printf("Received authorize response: %s\n", response);
-
     // Parse JSON response
     if (parse_authorize_response(response)) {
         client->authorized = true;
