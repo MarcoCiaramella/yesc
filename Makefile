@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -O2 -std=c99 -D_GNU_SOURCE
+CFLAGS = -Wall -Wextra -O3 -std=c99 -D_GNU_SOURCE -msse -msse2 -msse4.1 -mavx
 LDFLAGS = -pthread -lm
 
 # Directories
