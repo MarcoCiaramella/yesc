@@ -29,6 +29,7 @@ int parse_subscribe_response(const char* json, stratum_job_t* job) {
 
 int parse_authorize_response(const char* json) {
     // Look for "result":true
+    printf("---Authorize response: %s\n", json);
     return strstr(json, "\"result\":true") ? 0 : -1;
 }
 
