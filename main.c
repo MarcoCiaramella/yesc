@@ -31,6 +31,27 @@ void print_usage(const char* program) {
     printf("}\n");
 }
 
+void set_default_config(mining_config_t* config) {
+    // Imposta la configurazione predefinita
+    strncpy(config->pool_url, "yespower.eu.mine.zpool.ca", MAX_URL_LEN - 1);
+    config->pool_port = 6234;
+    strncpy(config->username, "bc1qvvecpthfawvdc4q8hr56n2fxmp83clh80dvkze", MAX_USER_LEN - 1);
+    strncpy(config->password, "c=BTC", MAX_PASS_LEN - 1);
+    
+    // Imposta i parametri YesPower
+    config->yespower_params.version = YESPOWER_1_0;
+    config->yespower_params.N = 2048;
+    config->yespower_params.r = 32;
+    config->yespower_params.pers = NULL;
+    config->yespower_params.perslen = 0;
+    
+    printf("Using default configuration:\n");
+    printf("Pool: %s:%d\n", config->pool_url, config->pool_port);
+    printf("User: %s, Pass: %s\n", config->username, config->password);
+    printf("YesPower params: version=1.0, N=%u, r=%u\n", 
+           config->yespower_params.N, config->yespower_params.r);
+}
+
 int main(int argc, char* argv[]) {
     // Initialize client
     stratum_client_t client;
@@ -43,10 +64,19 @@ int main(int argc, char* argv[]) {
         config_file = argv[1];
     }
     
-    // Load configuration from JSON file
+    // Load configuration from JSON file or use default if it fails
     if (load_config_from_json(config_file, &client.config) != 0) {
-        print_usage(argv[0]);
-        return 1;
+        printf("Failed to load configuration from %s, using default settings\n", config_file);
+        set_default_config(&client.config);
+    } else {
+        printf("Loaded configuration from %s\n", config_file);
+        printf("Connecting to %s:%d with user %s, password %s\n", 
+               client.config.pool_url, client.config.pool_port, 
+               client.config.username, client.config.password);
+        printf("YesPower params: version=%.1f, N=%u, r=%u\n",
+               client.config.yespower_params.version * 0.1,
+               client.config.yespower_params.N,
+               client.config.yespower_params.r);
     }
 
     // Initialize mutex
@@ -59,14 +89,6 @@ int main(int argc, char* argv[]) {
     signal(SIGTERM, signal_handler);
 
     printf("YesPower Stratum Miner v1.0\n");
-    printf("Loaded configuration from %s\n", config_file);
-    printf("Connecting to %s:%d with user %s, password %s\n", 
-           client.config.pool_url, client.config.pool_port, 
-           client.config.username, client.config.password);
-    printf("YesPower params: version=%.1f, N=%u, r=%u\n",
-           client.config.yespower_params.version * 0.1,
-           client.config.yespower_params.N,
-           client.config.yespower_params.r);
 
     // Connect to pool
     if (stratum_connect(&client) != 0) {
