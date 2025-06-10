@@ -94,7 +94,7 @@ bool extract_json_bool(const char* json, const char* key) {
     return strstr(start, "true") == start;
 }
 
-int load_config_from_json(const char* filename, stratum_config_t* config) {
+int load_config_from_json(const char* filename, mining_config_t* config) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         printf("Error: Cannot open config file %s\n", filename);

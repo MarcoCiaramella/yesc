@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "stratum_client.h": "c"
+    }
+}
