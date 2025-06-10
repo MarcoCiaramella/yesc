@@ -58,6 +58,10 @@ int main(int argc, char* argv[]) {
     memset(&client, 0, sizeof(client));
     global_client = &client;
     
+    // Rileva e stampa il numero di core CPU
+    long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
+    printf("Numero di core CPU rilevati: %ld\n", num_cores);
+    
     // Set default config file or use the one provided
     const char* config_file = "config.json";
     if (argc >= 2) {
