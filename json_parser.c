@@ -174,11 +174,50 @@ int parse_job_notification(const char* json, stratum_job_t* job) {
         job->clean_jobs = false;
     }
     
-    // Convert nbits to target (simplified conversion)
-    snprintf(job->target, sizeof(job->target), 
-            "0000%s00000000000000000000000000000000000000000000000000000000", job->nbits+4);
+    // Convert nbits to target (proper conversion)
+    nbits_to_target(job->nbits, job->target, sizeof(job->target));
     
     return 0;
+}
+
+// New function to convert nbits to target properly
+void nbits_to_target(const char* nbits_hex, char* target_hex, size_t target_size) {
+    unsigned int nbits;
+    sscanf(nbits_hex, "%x", &nbits);
+    
+    // Extract exponent and mantissa from nbits
+    unsigned int exponent = nbits >> 24;
+    unsigned int mantissa = nbits & 0x00FFFFFF;
+    
+    // Calculate target
+    unsigned char target_bytes[32] = {0};
+    if (exponent <= 3) {
+        mantissa >>= 8 * (3 - exponent);
+        target_bytes[31] = mantissa & 0xFF;
+        target_bytes[30] = (mantissa >> 8) & 0xFF;
+        target_bytes[29] = (mantissa >> 16) & 0xFF;
+    } else {
+        target_bytes[31] = mantissa & 0xFF;
+        target_bytes[30] = (mantissa >> 8) & 0xFF;
+        target_bytes[29] = (mantissa >> 16) & 0xFF;
+        
+        int i;
+        for (i = 0; i < exponent - 3; i++) {
+            int j;
+            for (j = 0; j < 31; j++) {
+                target_bytes[j] = target_bytes[j + 1];
+            }
+            target_bytes[31] = 0;
+        }
+    }
+    
+    // Convert to hex string
+    char* ptr = target_hex;
+    for (int i = 0; i < 32; i++) {
+        sprintf(ptr, "%02x", target_bytes[i]);
+        ptr += 2;
+    }
+    *ptr = '\0';
 }
 
 char* extract_json_string(const char* json, const char* key) {

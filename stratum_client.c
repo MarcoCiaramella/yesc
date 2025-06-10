@@ -172,6 +172,7 @@ void* stratum_receiver_thread(void* arg) {
             if (parse_job_notification(buffer, &client->current_job) == 0) {
                 client->new_job = true;
                 printf("New job received: %s\n", client->current_job.job_id);
+                print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
@@ -350,4 +351,33 @@ void bin_to_hex(const uint8_t* bin, char* hex, size_t bin_len) {
         sprintf(hex + i * 2, "%02x", bin[i]);
     }
     hex[bin_len * 2] = '\0';
+}
+
+void print_target(const char* target_hex) {
+    // Print target in human-readable format
+    printf("Target: ");
+    
+    // Find first non-zero character to make output more readable
+    int i = 0;
+    while (target_hex[i] == '0' && i < 64 - 8) {
+        i++;
+    }
+    
+    // Print with colors for better visibility
+    printf("\033[36m");  // Cyan color
+    
+    // Print the first non-zero part in bold
+    if (i < 64) {
+        printf("\033[1m");  // Bold
+        printf("%c", target_hex[i]);
+        printf("\033[0m\033[36m");  // Reset bold but keep cyan
+        i++;
+    }
+    
+    // Print the rest of the significant digits
+    for (; i < 64; i++) {
+        printf("%c", target_hex[i]);
+    }
+    
+    printf("\033[0m\n");  // Reset color
 }

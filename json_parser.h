@@ -13,5 +13,6 @@ bool extract_json_bool(const char* json, const char* key);
 
 // Configuration loading function
 int load_config_from_json(const char* filename, mining_config_t* config);
+void nbits_to_target(const char* nbits_hex, char* target_hex, size_t target_size);
 
 #endif
