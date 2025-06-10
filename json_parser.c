@@ -93,3 +93,120 @@ bool extract_json_bool(const char* json, const char* key) {
     start += strlen(search_pattern);
     return strstr(start, "true") == start;
 }
+
+int load_config_from_json(const char* filename, stratum_config_t* config) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Error: Cannot open config file %s\n", filename);
+        return -1;
+    }
+    
+    // Find file size and read entire file into buffer
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    
+    char* buffer = (char*)malloc(file_size + 1);
+    if (!buffer) {
+        fclose(file);
+        printf("Error: Memory allocation failed\n");
+        return -1;
+    }
+    
+    size_t read_size = fread(buffer, 1, file_size, file);
+    fclose(file);
+    buffer[read_size] = '\0';
+    
+    // Parse JSON values
+    char* temp;
+    
+    // Pool URL (required)
+    temp = extract_json_string(buffer, "pool_url");
+    if (temp) {
+        strncpy(config->pool_url, temp, MAX_URL_LEN - 1);
+        config->pool_url[MAX_URL_LEN - 1] = '\0';
+        free(temp);
+    } else {
+        printf("Error: pool_url not found in config file\n");
+        free(buffer);
+        return -1;
+    }
+    
+    // Pool port (required)
+    config->pool_port = extract_json_int(buffer, "pool_port");
+    if (config->pool_port <= 0) {
+        printf("Error: Invalid or missing pool_port in config file\n");
+        free(buffer);
+        return -1;
+    }
+    
+    // Username (required)
+    temp = extract_json_string(buffer, "username");
+    if (temp) {
+        strncpy(config->username, temp, MAX_USER_LEN - 1);
+        config->username[MAX_USER_LEN - 1] = '\0';
+        free(temp);
+    } else {
+        printf("Error: username not found in config file\n");
+        free(buffer);
+        return -1;
+    }
+    
+    // Password (optional, default "x")
+    temp = extract_json_string(buffer, "password");
+    if (temp) {
+        strncpy(config->password, temp, MAX_PASS_LEN - 1);
+        config->password[MAX_PASS_LEN - 1] = '\0';
+        free(temp);
+    } else {
+        strcpy(config->password, "x"); // Default password
+    }
+    
+    // YesPower version (optional, default 1.0)
+    float version = 1.0;
+    char* version_str = extract_json_string(buffer, "yespower_version");
+    if (version_str) {
+        version = atof(version_str);
+        free(version_str);
+    }
+    
+    if (version == 0.5) {
+        config->yespower_params.version = YESPOWER_0_5;
+    } else if (version == 1.0) {
+        config->yespower_params.version = YESPOWER_1_0;
+    } else {
+        printf("Warning: Unrecognized version %.1f, using default 1.0\n", version);
+        config->yespower_params.version = YESPOWER_1_0;
+    }
+    
+    // YesPower N parameter (optional, default 2048)
+    int N = extract_json_int(buffer, "yespower_N");
+    if (N > 0) {
+        config->yespower_params.N = N;
+        if (config->yespower_params.N < 1024) {
+            printf("Warning: N value too small, setting to 1024\n");
+            config->yespower_params.N = 1024;
+        }
+    } else {
+        config->yespower_params.N = 2048; // Default N value
+    }
+    
+    // YesPower r parameter (optional, default 8)
+    int r = extract_json_int(buffer, "yespower_r");
+    if (r > 0) {
+        config->yespower_params.r = r;
+        if (config->yespower_params.r < 8) {
+            printf("Warning: r value too small, setting to 8\n");
+            config->yespower_params.r = 8;
+        }
+    } else {
+        config->yespower_params.r = 8; // Default r value
+    }
+    
+    // Default NULL settings for pers
+    config->yespower_params.pers = NULL;
+    config->yespower_params.perslen = 0;
+    
+    free(buffer);
+    return 0;
+}

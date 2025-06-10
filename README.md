@@ -1,80 +1,60 @@
-# YesPower Stratum Miner
+# YesPower Stratum Client
 
-Un client di mining Stratum che utilizza l'algoritmo YesPower per il mining di criptovalute.
-
-## Caratteristiche
-
-- Supporto completo per il protocollo Stratum
-- Integrazione con l'algoritmo YesPower (versioni 0.5 e 1.0)
-- Mining multi-threaded
-- Statistiche in tempo reale
-- Gestione automatica dei job e riconnessione
-
-## Compilazione
-
-```bash
-# Clona o scarica il codice
-cd yesc
-
-# Compila il progetto
-make
-
-# Opzionale: testa yespower
-make test
-```
-
-## Utilizzo
-
-```bash
-./yespower-miner <pool_url> <pool_port> <username> [password] [version] [N] [r]
-```
-
-Esempi:
-```bash
-# Utilizzo base
-./yespower-miner stratum.pool.com 3333 your_wallet_address
-
-# Utilizzo con password
-./yespower-miner stratum.pool.com 3333 your_wallet_address yourpassword
-
-# Utilizzo con parametri YesPower personalizzati
-./yespower-miner stratum.pool.com 3333 your_wallet_address x 1.0 2048 8
-```
-
-### Parametri:
-- `pool_url`: URL del mining pool
-- `pool_port`: Porta del mining pool
-- `username`: Il tuo indirizzo wallet o username
-- `[password]`: La tua password (predefinito: x)
-- `[version]`: Versione YesPower: 0.5 o 1.0 (predefinito: 1.0)
-- `[N]`: Parametro N di YesPower (predefinito: 2048)
-- `[r]`: Parametro r di YesPower (predefinito: 8)
-
-## Configurazione YesPower
-
-Il miner è configurato di default per YesPower 1.0 con parametri:
-- N = 2048
-- r = 8
-- version = 1.0
-
-Puoi modificare questi parametri direttamente dalla riga di comando come mostrato negli esempi di utilizzo.
-
-## Pool Supportate
-
-Il miner supporta qualsiasi pool che utilizza il protocollo Stratum standard con YesPower come algoritmo di mining.
+Un client per il mining di criptovalute basate su YesPower utilizzando il protocollo Stratum.
 
 ## Requisiti
 
-- GCC compiler
-- pthread library
-- Sistema operativo Linux/Unix
+- GCC o altro compilatore C
+- Librerie di supporto: pthread
+- Sistema operativo compatibile con POSIX
 
-## Note
+## Compilazione
 
-- Questo è un miner di base per scopi educativi
-- Per uso in produzione, considera ottimizzazioni aggiuntive
-- Il parser JSON è semplificato e potrebbe richiedere miglioramenti per pool specifiche
+```
+gcc main.c stratum_client.c json_parser.c -o yesc -lpthread
+```
 
-## License
+## Uso
 
-Segue la stessa licenza di YesPower (BSD-style license)
+```
+./yesc [config_file]
+```
+
+Se non viene specificato un file di configurazione, verrà utilizzato per default `config.json`.
+
+## Configurazione
+
+Il file di configurazione deve essere in formato JSON e contenere i seguenti parametri:
+
+### Parametri obbligatori:
+
+- `pool_url`: URL o indirizzo IP del pool di mining
+- `pool_port`: Porta del server pool
+- `username`: Username o indirizzo wallet per il mining
+
+### Parametri opzionali:
+
+- `password`: Password per il pool (default: "x")
+- `yespower_version`: Versione di YesPower (0.5 o 1.0, default: 1.0)
+- `yespower_N`: Parametro N per YesPower (default: 2048)
+- `yespower_r`: Parametro r per YesPower (default: 8)
+
+## Esempio di file di configurazione
+
+```json
+{
+  "pool_url": "stratum.pool.com",
+  "pool_port": 3333,
+  "username": "your_wallet_address",
+  "password": "x",
+  "yespower_version": 1.0,
+  "yespower_N": 2048,
+  "yespower_r": 8
+}
+```
+
+## Operazioni
+
+Una volta avviato, il miner si connetterà al pool specificato e inizierà a minare.
+Le statistiche di mining saranno mostrate periodicamente nella console.
+Per interrompere il mining, premere Ctrl+C.

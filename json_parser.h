@@ -11,4 +11,7 @@ char* extract_json_string(const char* json, const char* key);
 int extract_json_int(const char* json, const char* key);
 bool extract_json_bool(const char* json, const char* key);
 
+// Configuration loading function
+int load_config_from_json(const char* filename, stratum_config_t* config);
+
 #endif
