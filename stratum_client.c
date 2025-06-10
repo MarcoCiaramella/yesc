@@ -125,6 +125,10 @@ int stratum_submit_share(stratum_client_t* client, uint32_t nonce, uint32_t extr
     snprintf(extranonce2_hex, sizeof(extranonce2_hex), "%08x", extranonce2);
     snprintf(ntime_hex, sizeof(ntime_hex), "%s", client->current_job.ntime);
 
+    // Aggiungo stampa dei dettagli dello share prima dell'invio
+    printf("Preparazione share: job_id=%s, nonce=%s, extranonce2=%s, ntime=%s\n", 
+           client->current_job.job_id, nonce_hex, extranonce2_hex, ntime_hex);
+
     snprintf(request, sizeof(request),
         "{\"id\": %u, \"method\": \"mining.submit\", \"params\": [\"%s\", \"%s\", \"%s\", \"%s\", \"%s\"]}\n",
         client->next_id++,
