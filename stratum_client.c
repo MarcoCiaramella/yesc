@@ -177,6 +177,16 @@ void* stratum_receiver_thread(void* arg) {
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
+        // Gestisci il messaggio mining.set_difficulty
+        else if (strstr(buffer, "mining.set_difficulty")) {
+            char* diff_str = strstr(buffer, "params");
+            if (diff_str && (diff_str = strstr(diff_str, "["))) {
+                diff_str++; // Salta '['
+                // Estrai il valore di difficoltà
+                client->current_difficulty = strtod(diff_str, NULL);
+                printf("\033[36mDifficoltà impostata dal pool: %.6f\033[0m\n", client->current_difficulty);
+            }
+        }
         else if (strstr(buffer, "\"result\":true")) {
             client->shares_accepted++;
             

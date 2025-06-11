@@ -58,6 +58,9 @@ int main(int argc, char* argv[]) {
     memset(&client, 0, sizeof(client));
     global_client = &client;
     
+    // Inizializza la difficoltà a un valore predefinito (sarà aggiornata dal server)
+    client.current_difficulty = 1.0;
+    
     // Rileva e stampa il numero di core CPU
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
     printf("Numero di core CPU rilevati: %ld\n", num_cores);
@@ -144,6 +147,7 @@ int main(int argc, char* argv[]) {
     }
 
     printf("Mining started! Press Ctrl+C to stop.\n");
+    printf("Difficoltà iniziale: %.6f\n", client.current_difficulty);
 
     // Wait for threads to finish
     pthread_join(mining_thread_handle, NULL);
@@ -153,8 +157,9 @@ int main(int argc, char* argv[]) {
     stratum_disconnect(&client);
     pthread_mutex_destroy(&client.job_mutex);
 
-    printf("Final stats: Submitted=%llu, Accepted=%llu, Rejected=%llu\n",
-           client.shares_submitted, client.shares_accepted, client.shares_rejected);
+    printf("Final stats: Submitted=%llu, Accepted=%llu, Rejected=%llu, Difficulty=%.6f\n",
+           client.shares_submitted, client.shares_accepted, client.shares_rejected,
+           client.current_difficulty);
 
     return 0;
 }
