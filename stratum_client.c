@@ -166,6 +166,10 @@ void* stratum_receiver_thread(void* arg) {
         
         buffer[received] = '\0';
         
+        // Debug: stampa i primi caratteri del messaggio ricevuto
+        printf("Message received (%zd bytes): %.100s%s\n", 
+               received, buffer, received > 100 ? "..." : "");
+        
         // Parse incoming messages (job notifications, submit responses)
         if (strstr(buffer, "mining.notify")) {
             pthread_mutex_lock(&client->job_mutex);
