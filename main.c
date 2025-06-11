@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     global_client = &client;
     
     // Inizializza la difficoltà a un valore predefinito (sarà aggiornata dal server)
-    client.current_difficulty = 1.0;
+    client.current_difficulty = 0.02;
     
     // Rileva e stampa il numero di core CPU
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
