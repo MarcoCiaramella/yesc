@@ -164,40 +164,41 @@ int stratum_suggest_difficulty(stratum_client_t* client, double difficulty) {
     return 0;
 }
 
-// Nuova funzione per convertire difficoltà in target
+// Funzione per invertire i byte in un uint32_t (equivalente a swap32 in JS)
+uint32_t swap32(uint32_t val) {
+    return ((val >> 24) & 0xff) | 
+           ((val >> 8) & 0xff00) | 
+           ((val << 8) & 0xff0000) | 
+           ((val << 24) & 0xff000000);
+}
+
 void difficulty_to_target(double difficulty, char* target_hex) {
-    // Difficoltà 1.0 corrisponde a questo target massimo per YesPower
-    const char* max_target_hex = "0000ffff00000000000000000000000000000000000000000000000000000000";
+    // Nel JavaScript il target viene calcolato come:
+    // "0000FFFF00000000000000000000000000000000000000000000000000000000" / difficulty
     
-    // Inizia copiando il target massimo
-    strcpy(target_hex, max_target_hex);
+    // Inizia con array di 8 parole da 32bit (32 byte totali)
+    uint32_t target_words[8] = {0};
     
-    // Calcola quanti zeri aggiuntivi servono in base alla difficoltà
-    int leading_zeros = 3; // Il target massimo ha già 3 zeri iniziali
-    double temp_diff = difficulty;
+    // Difficoltà 1.0 corrisponde a 0x00000000FFFF0000ULL nel primo elemento significativo
+    if (difficulty <= 0) difficulty = 1.0;
     
-    // Ogni incremento di 16x nella difficoltà richiede uno zero esadecimale in più
-    while (temp_diff >= 16.0 && leading_zeros < 63) {
-        temp_diff /= 16.0;
-        leading_zeros++;
+    // Calcola il valore dividendo il massimo per la difficoltà
+    // Nota: questa è un'approssimazione perché i target sono in realtà numeri a 256 bit
+    target_words[7] = 0x0000FFFF; // Big endian, i primi byte significativi
+    
+    if (difficulty > 1.0) {
+        target_words[7] = (uint32_t)(target_words[7] / difficulty);
     }
     
-    // Aggiungi gli zeri iniziali
-    for (int i = 0; i < leading_zeros && i < 63; i++) {
-        target_hex[i] = '0';
+    // Applica lo swap32 a ogni parola da 32 bit, come nel JavaScript
+    for (int i = 0; i < 8; i++) {
+        target_words[i] = swap32(target_words[i]);
     }
     
-    // Regola la prima cifra non-zero in base alla difficoltà rimanente
-    if (leading_zeros < 63) {
-        int first_digit = (int)(15.0 / temp_diff);
-        if (first_digit < 10) {
-            target_hex[leading_zeros] = '0' + first_digit;
-        } else {
-            target_hex[leading_zeros] = 'a' + (first_digit - 10);
-        }
+    // Converti il target in stringa esadecimale
+    for (int i = 0; i < 8; i++) {
+        sprintf(target_hex + (i * 8), "%08x", target_words[i]);
     }
-    
-    // Assicura che la stringa sia sempre terminata
     target_hex[64] = '\0';
 }
 
