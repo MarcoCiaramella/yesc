@@ -176,7 +176,7 @@ void* stratum_receiver_thread(void* arg) {
             if (parse_job_notification(buffer, &client->current_job) == 0) {
                 client->new_job = true;
                 printf("New job received: %s\n", client->current_job.job_id);
-                print_job_details(&client->current_job);
+                //print_job_details(&client->current_job);
                 print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
