@@ -172,6 +172,7 @@ void* stratum_receiver_thread(void* arg) {
             if (parse_job_notification(buffer, &client->current_job) == 0) {
                 client->new_job = true;
                 printf("New job received: %s\n", client->current_job.job_id);
+                print_job_details(&client->current_job);
                 print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
@@ -380,4 +381,36 @@ void print_target(const char* target_hex) {
     }
     
     printf("\033[0m\n");  // Reset color
+}
+
+void print_job_details(const stratum_job_t* job) {
+    printf("==== Job Details ====\n");
+    printf("Job ID: %s\n", job->job_id);
+    printf("Previous Hash: %s\n", job->prevhash);
+    printf("Version: %s\n", job->version);
+    printf("nBits: %s\n", job->nbits);
+    printf("nTime: %s\n", job->ntime);
+    printf("Clean Jobs: %s\n", job->clean_jobs ? "true" : "false");
+    
+    printf("Merkle Branches: %d branches\n", job->merkle_count);
+    for (int i = 0; i < job->merkle_count && i < 5; i++) {
+        printf("  [%d]: %s\n", i, job->merkle_branches[i]);
+    }
+    if (job->merkle_count > 5) {
+        printf("  ... and %d more branches\n", job->merkle_count - 5);
+    }
+    
+    printf("Coinb1 (first %d chars): %.40s%s\n", 
+           job->coinb1[0] ? 40 : 0, 
+           job->coinb1[0] ? job->coinb1 : "(empty)", 
+           strlen(job->coinb1) > 40 ? "..." : "");
+    
+    printf("Coinb2 (first %d chars): %.40s%s\n", 
+           job->coinb2[0] ? 40 : 0, 
+           job->coinb2[0] ? job->coinb2 : "(empty)",
+           strlen(job->coinb2) > 40 ? "..." : "");
+    
+    printf("Extranonce1: %s\n", job->extranonce1);
+    printf("Extranonce2 Size: %d\n", job->extranonce2_size);
+    printf("====================\n");
 }
