@@ -166,6 +166,10 @@ void* stratum_receiver_thread(void* arg) {
         
         buffer[received] = '\0';
         
+        // Debug: stampa i primi caratteri del messaggio ricevuto
+        printf("Message received (%zd bytes): %.100s%s\n", 
+               received, buffer, received > 100 ? "..." : "");
+        
         // Parse incoming messages (job notifications, submit responses)
         if (strstr(buffer, "mining.notify")) {
             pthread_mutex_lock(&client->job_mutex);
@@ -177,14 +181,30 @@ void* stratum_receiver_thread(void* arg) {
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
-        // Gestisci il messaggio mining.set_difficulty
-        else if (strstr(buffer, "mining.set_difficulty")) {
-            char* diff_str = strstr(buffer, "params");
-            if (diff_str && (diff_str = strstr(diff_str, "["))) {
-                diff_str++; // Salta '['
+        // Gestione migliorata per mining.set_difficulty
+        else if (strstr(buffer, "mining.set_difficulty") || strstr(buffer, "\"method\":\"mining.set_difficulty\"")) {
+            // Cerchiamo prima il parametro params in formato JSON
+            char* diff_str = NULL;
+            
+            // Cerca in formato "params":[numero]
+            diff_str = strstr(buffer, "\"params\":");
+            if (diff_str) {
+                diff_str += 9; // Salta "params":
+                
+                // Trova l'inizio dell'array
+                while (*diff_str && *diff_str != '[') diff_str++;
+                if (*diff_str == '[') diff_str++; // Salta '['
+                
                 // Estrai il valore di difficoltà
-                client->current_difficulty = strtod(diff_str, NULL);
-                printf("\033[36mDifficoltà impostata dal pool: %.6f\033[0m\n", client->current_difficulty);
+                double new_diff = strtod(diff_str, NULL);
+                if (new_diff > 0) {
+                    client->current_difficulty = new_diff;
+                    printf("\033[36mDifficoltà impostata dal pool: %.6f\033[0m\n", client->current_difficulty);
+                } else {
+                    printf("\033[33mWarning: Ricevuto messaggio set_difficulty con valore non valido\033[0m\n");
+                }
+            } else {
+                printf("\033[33mWarning: Messaggio mining.set_difficulty malformattato\033[0m\n");
             }
         }
         else if (strstr(buffer, "\"result\":true")) {

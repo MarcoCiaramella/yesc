@@ -65,6 +65,8 @@ int main(int argc, char* argv[]) {
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
     printf("Numero di core CPU rilevati: %ld\n", num_cores);
     
+    printf("\033[33mNota: La difficoltà iniziale è impostata a %.6f e verrà aggiornata quando il server invierà il messaggio mining.set_difficulty\033[0m\n", client.current_difficulty);
+    
     // Set default config file or use the one provided
     const char* config_file = "config.json";
     if (argc >= 2) {
