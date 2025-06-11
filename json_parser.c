@@ -189,37 +189,26 @@ void nbits_to_target(const char* nbits_hex, char* target_hex, size_t target_size
     unsigned int exponent = nbits >> 24;
     unsigned int mantissa = nbits & 0x00FFFFFF;
     
-    // Calculate difficulty based on nbits
-    // Formula: difficulty = (max_target) / (current_target)
-    // Where current_target = mantissa * 256^(exponent-3)
-    double difficulty = 1.0;
-    
-    if (exponent > 3) {
-        difficulty = mantissa * (1 << (8 * (exponent - 3)));
-    } else if (exponent < 3) {
-        difficulty = (double)mantissa / (1 << (8 * (3 - exponent)));
-    } else {
-        difficulty = mantissa;
-    }
-    
-    // Set initial max_target (all bytes 0xFF except first two)
+    // Calculate target
     unsigned char target_bytes[32] = {0};
-    for (int i = 2; i < 32; i++) {
-        target_bytes[i] = 0xFF;
-    }
-    
-    // Limit difficulty to avoid division by zero
-    if (difficulty <= 0.0) difficulty = 1.0;
-    
-    // Calculate target = max_target / difficulty
-    double factor = 1.0 / difficulty;
-    
-    // Multiply each byte by factor, starting from most significant
-    double carry = 0.0;
-    for (int i = 2; i < 32; i++) {
-        double temp = target_bytes[i] * factor + carry;
-        target_bytes[i] = (unsigned char)temp;
-        carry = (temp - (unsigned char)temp) * 256.0;
+    if (exponent <= 3) {
+        mantissa >>= 8 * (3 - exponent);
+        target_bytes[31] = mantissa & 0xFF;
+        target_bytes[30] = (mantissa >> 8) & 0xFF;
+        target_bytes[29] = (mantissa >> 16) & 0xFF;
+    } else {
+        target_bytes[31] = mantissa & 0xFF;
+        target_bytes[30] = (mantissa >> 8) & 0xFF;
+        target_bytes[29] = (mantissa >> 16) & 0xFF;
+        
+        int i;
+        for (i = 0; i < exponent - 3; i++) {
+            int j;
+            for (j = 0; j < 31; j++) {
+                target_bytes[j] = target_bytes[j + 1];
+            }
+            target_bytes[31] = 0;
+        }
     }
     
     // Convert to hex string
