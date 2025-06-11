@@ -164,6 +164,43 @@ int stratum_suggest_difficulty(stratum_client_t* client, double difficulty) {
     return 0;
 }
 
+// Nuova funzione per convertire difficoltà in target
+void difficulty_to_target(double difficulty, char* target_hex) {
+    // Difficoltà 1.0 corrisponde a questo target massimo per YesPower
+    const char* max_target_hex = "0000ffff00000000000000000000000000000000000000000000000000000000";
+    
+    // Inizia copiando il target massimo
+    strcpy(target_hex, max_target_hex);
+    
+    // Calcola quanti zeri aggiuntivi servono in base alla difficoltà
+    int leading_zeros = 3; // Il target massimo ha già 3 zeri iniziali
+    double temp_diff = difficulty;
+    
+    // Ogni incremento di 16x nella difficoltà richiede uno zero esadecimale in più
+    while (temp_diff >= 16.0 && leading_zeros < 63) {
+        temp_diff /= 16.0;
+        leading_zeros++;
+    }
+    
+    // Aggiungi gli zeri iniziali
+    for (int i = 0; i < leading_zeros && i < 63; i++) {
+        target_hex[i] = '0';
+    }
+    
+    // Regola la prima cifra non-zero in base alla difficoltà rimanente
+    if (leading_zeros < 63) {
+        int first_digit = (int)(15.0 / temp_diff);
+        if (first_digit < 10) {
+            target_hex[leading_zeros] = '0' + first_digit;
+        } else {
+            target_hex[leading_zeros] = 'a' + (first_digit - 10);
+        }
+    }
+    
+    // Assicura che la stringa sia sempre terminata
+    target_hex[64] = '\0';
+}
+
 void* stratum_receiver_thread(void* arg) {
     stratum_client_t* client = (stratum_client_t*)arg;
     char buffer[MAX_BUFFER_SIZE];
@@ -193,6 +230,10 @@ void* stratum_receiver_thread(void* arg) {
                 client->new_job = true;
                 printf("New job received: %s\n", client->current_job.job_id);
                 //print_job_details(&client->current_job);
+                
+                // Usa la difficoltà corrente per calcolare il target invece di quello dal job
+                difficulty_to_target(client->current_difficulty, client->current_job.target);
+                printf("Target calcolato dalla difficoltà (%.6f):\n", client->current_difficulty);
                 print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
@@ -216,6 +257,13 @@ void* stratum_receiver_thread(void* arg) {
                 if (new_diff > 0) {
                     client->current_difficulty = new_diff;
                     printf("\033[36mDifficoltà impostata dal pool: %.6f\033[0m\n", client->current_difficulty);
+                    
+                    // Calcola nuovo target basato sulla nuova difficoltà
+                    pthread_mutex_lock(&client->job_mutex);
+                    difficulty_to_target(new_diff, client->current_job.target);
+                    printf("Nuovo target calcolato:\n");
+                    print_target(client->current_job.target);
+                    pthread_mutex_unlock(&client->job_mutex);
                 } else {
                     printf("\033[33mWarning: Ricevuto messaggio set_difficulty con valore non valido\033[0m\n");
                 }
