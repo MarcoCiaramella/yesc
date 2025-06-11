@@ -119,6 +119,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Suggerisci una difficoltà iniziale al server
+    stratum_suggest_difficulty(&client, client.current_difficulty);
+    printf("Richiesta difficoltà inviata al pool\n");
+
     // Start receiver thread
     pthread_t receiver_thread, mining_thread_handle;
     if (pthread_create(&receiver_thread, NULL, stratum_receiver_thread, &client) != 0) {

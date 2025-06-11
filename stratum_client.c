@@ -148,6 +148,22 @@ int stratum_submit_share(stratum_client_t* client, uint32_t nonce, uint32_t extr
     return 0;
 }
 
+int stratum_suggest_difficulty(stratum_client_t* client, double difficulty) {
+    char request[1024];
+    
+    snprintf(request, sizeof(request),
+        "{\"id\": %u, \"method\": \"mining.suggest_difficulty\", \"params\": [%f]}\n",
+        client->next_id++, difficulty);
+
+    if (send(client->sockfd, request, strlen(request), 0) < 0) {
+        perror("Failed to send difficulty suggestion");
+        return -1;
+    }
+
+    printf("Sent difficulty suggestion: %.6f\n", difficulty);
+    return 0;
+}
+
 void* stratum_receiver_thread(void* arg) {
     stratum_client_t* client = (stratum_client_t*)arg;
     char buffer[MAX_BUFFER_SIZE];
@@ -166,7 +182,7 @@ void* stratum_receiver_thread(void* arg) {
         
         buffer[received] = '\0';
         
-        // Debug: stampa i primi caratteri del messaggio ricevuto
+        // Miglioramento debug - stampa tutti i messaggi ricevuti
         printf("Message received (%zd bytes): %.100s%s\n", 
                received, buffer, received > 100 ? "..." : "");
         
