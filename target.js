@@ -23,5 +23,5 @@ function calcTarget(miningDiff) {
     return (parseInt("0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16) / miningDiff).toString(16).padStart(64, "0");
 }
 
-const target = new Uint8Array(swap32Arr(new Uint32Array(hex2Uint8Array(calcTarget(0.1)).buffer)).buffer);
+const target = new Uint8Array(swap32Arr(new Uint32Array(hex2Uint8Array(calcTarget(parseFloat(process.argv[2]))).buffer)).buffer);
 console.log("Target: " + Array.from(target).map(b => b.toString(16).padStart(2, '0')).join(''));
