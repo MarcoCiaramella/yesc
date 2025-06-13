@@ -1,0 +1,3 @@
+
+
+console.log('res: ', parseInt("0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16) / parseFloat(process.argv[2]));
