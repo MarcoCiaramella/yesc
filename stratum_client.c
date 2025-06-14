@@ -193,34 +193,26 @@ uint32_t swap32(uint32_t val)
 
 void difficulty_to_target(double difficulty, char *target_hex)
 {
-    // Il target viene calcolato come:
+    // Nel JavaScript il target viene calcolato come:
     // "0000FFFF00000000000000000000000000000000000000000000000000000000" / difficulty
 
     // Inizia con array di 8 parole da 32bit (32 byte totali)
     uint32_t target_words[8] = {0};
 
-    // Assicuriamoci che la difficoltà non sia mai zero
+    // Difficoltà 1.0 corrisponde a 0x00000000FFFF0000ULL nel primo elemento significativo
     if (difficulty <= 0)
         difficulty = 1.0;
 
-    // Per difficoltà 1.0, il target è:
-    // 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-    // Dove il primo byte significativo è 0x00000000FFFF
-    
-    // Per difficoltà sopra 1.0, dividiamo il valore massimo per la difficoltà
-    uint64_t diff_val = 0xFFFF0000ULL;
-    diff_val = (uint64_t)(diff_val / difficulty);
-    
-    if (diff_val <= 0xFFFFUL) {
-        // Se il risultato è minore di 0xFFFF, lo inseriamo in target_words[6]
-        target_words[6] = (uint32_t)diff_val;
-    } else {
-        // Altrimenti lo mettiamo in target_words[7]
-        target_words[7] = (uint32_t)(diff_val & 0xFFFF);
-        target_words[6] = (uint32_t)(diff_val >> 16);
+    // Calcola il valore dividendo il massimo per la difficoltà
+    // Nota: questa è un'approssimazione perché i target sono in realtà numeri a 256 bit
+    target_words[7] = 0x0000FFFF; // Big endian, i primi byte significativi
+
+    if (difficulty > 1.0)
+    {
+        target_words[7] = (uint32_t)(target_words[7] / difficulty);
     }
 
-    // Applica lo swap32 a ogni parola da 32 bit
+    // Applica lo swap32 a ogni parola da 32 bit, come nel JavaScript
     for (int i = 0; i < 8; i++)
     {
         target_words[i] = swap32(target_words[i]);
@@ -272,17 +264,17 @@ void *stratum_receiver_thread(void *arg)
                 printf("New job received: %s\n", client->current_job.job_id);
                 // print_job_details(&client->current_job);
 
-                // Calcola il target in base alla difficoltà corrente
-                difficulty_to_target(client->current_difficulty, client->current_job.target);
-                printf("Target calcolato per difficoltà %.6f:\n", client->current_difficulty);
+                // Impostiamo sempre il target fisso indipendentemente dalla difficoltà
+                strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
+                printf("Target fisso impostato:\n");
                 print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
-        // Gestione per mining.set_difficulty - ora usiamo la difficoltà ricevuta dal pool
+        // Gestione per mining.set_difficulty - ignoriamo il target inviato dal pool
         else if (strstr(buffer, "mining.set_difficulty") || strstr(buffer, "\"method\":\"mining.set_difficulty\""))
         {
-            // Cerchiamo il parametro params in formato JSON
+            // Cerchiamo il parametro params in formato JSON solo per mostrare la difficoltà ricevuta
             char *diff_str = NULL;
 
             // Cerca in formato "params":[numero]
@@ -297,18 +289,17 @@ void *stratum_receiver_thread(void *arg)
                 if (*diff_str == '[')
                     diff_str++; // Salta '['
 
-                // Estrai il valore di difficoltà
+                // Estrai il valore di difficoltà solo per reportistica
                 double new_diff = strtod(diff_str, NULL);
                 if (new_diff > 0)
                 {
-                    pthread_mutex_lock(&client->job_mutex);
                     client->current_difficulty = new_diff;
-                    
-                    // Calcola il target in base alla difficoltà
-                    difficulty_to_target(client->current_difficulty, client->current_job.target);
-                    
-                    printf("\033[36mNuova difficoltà ricevuta dal pool: %.6f\033[0m\n", client->current_difficulty);
-                    printf("Target calcolato: ");
+                    printf("\033[36mDifficoltà ricevuta dal pool: %.6f (ignorata)\033[0m\n", client->current_difficulty);
+
+                    // Manteniamo il target fisso, ignorando la difficoltà ricevuta
+                    pthread_mutex_lock(&client->job_mutex);
+                    strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
+                    printf("Target mantenuto fisso:\n");
                     print_target(client->current_job.target);
                     pthread_mutex_unlock(&client->job_mutex);
                 }

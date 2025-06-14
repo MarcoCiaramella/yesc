@@ -65,7 +65,8 @@ int main(int argc, char* argv[]) {
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
     printf("Numero di core CPU rilevati: %ld\n", num_cores);
     
-    printf("\033[33mNota: Il miner calcola il target in base alla difficoltà ricevuta dal pool\033[0m\n");
+    printf("\033[33mNota: Il miner usa un target fisso: 00000a0000000000000000000000000000000000000000000000000000000000\033[0m\n");
+    printf("\033[33mI valori di difficoltà ricevuti dal server saranno ignorati\033[0m\n");
     
     // Set default config file or use the one provided
     const char* config_file = "config.json";
@@ -168,5 +169,4 @@ int main(int argc, char* argv[]) {
            client.current_difficulty);
 
     return 0;
-}
 }
