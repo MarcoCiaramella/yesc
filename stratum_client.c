@@ -251,8 +251,7 @@ void *stratum_receiver_thread(void *arg)
         buffer[received] = '\0';
 
         // Miglioramento debug - stampa tutti i messaggi ricevuti
-        printf("Message received (%zd bytes): %.100s%s\n",
-               received, buffer, received > 100 ? "..." : "");
+        printf("Message received (%zd bytes): %s\n", received, buffer);
 
         // Parse incoming messages (job notifications, submit responses)
         if (strstr(buffer, "mining.notify"))
