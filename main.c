@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
     
     // Inizializza la difficoltà a un valore predefinito (sarà aggiornata dal server)
     client.current_difficulty = 0.1;
+    client.difficulty_messages_received = 0;  // Inizializza il contatore dei messaggi di difficoltà
     
     // Rileva e stampa il numero di core CPU
     long num_cores = sysconf(_SC_NPROCESSORS_ONLN);
@@ -167,6 +168,7 @@ int main(int argc, char* argv[]) {
     printf("Final stats: Submitted=%llu, Accepted=%llu, Rejected=%llu, Difficulty=%.6f\n",
            client.shares_submitted, client.shares_accepted, client.shares_rejected,
            client.current_difficulty);
+    printf("Messaggi di difficoltà ricevuti: %llu\n", client.difficulty_messages_received);
 
     return 0;
 }

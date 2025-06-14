@@ -52,6 +52,7 @@ typedef struct {
     uint64_t shares_rejected;
     bool running;
     double current_difficulty;  // Aggiunto campo per memorizzare la difficoltà corrente
+    uint64_t difficulty_messages_received;  // Contatore per i messaggi di difficoltà ricevuti
 } stratum_client_t;
 
 // Function prototypes
