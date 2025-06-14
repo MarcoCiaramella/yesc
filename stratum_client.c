@@ -273,9 +273,6 @@ void *stratum_receiver_thread(void *arg)
         // Gestione per mining.set_difficulty - ignoriamo il target inviato dal pool
         else if (strstr(buffer, "mining.set_difficulty") || strstr(buffer, "\"method\":\"mining.set_difficulty\""))
         {
-            // Incrementa il contatore dei messaggi di difficoltà
-            client->difficulty_messages_received++;
-            
             // Cerchiamo il parametro params in formato JSON solo per mostrare la difficoltà ricevuta
             char *diff_str = NULL;
 
@@ -296,8 +293,7 @@ void *stratum_receiver_thread(void *arg)
                 if (new_diff > 0)
                 {
                     client->current_difficulty = new_diff;
-                    printf("\033[36m[DIFFICOLTÀ #%llu] Difficoltà ricevuta dal pool: %.6f (ignorata)\033[0m\n", 
-                           client->difficulty_messages_received, client->current_difficulty);
+                    printf("\033[36mDifficoltà ricevuta dal pool: %.6f (ignorata)\033[0m\n", client->current_difficulty);
 
                     // Manteniamo il target fisso, ignorando la difficoltà ricevuta
                     pthread_mutex_lock(&client->job_mutex);
@@ -305,12 +301,6 @@ void *stratum_receiver_thread(void *arg)
                     printf("Target mantenuto fisso:\n");
                     print_target(client->current_job.target);
                     pthread_mutex_unlock(&client->job_mutex);
-                    
-                    // Stampa timestamp per aiutare a vedere quanto tempo passa tra i messaggi
-                    time_t now = time(NULL);
-                    char time_str[30];
-                    strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", localtime(&now));
-                    printf("\033[36mOrario messaggio difficoltà: %s\033[0m\n", time_str);
                 }
             }
         }
