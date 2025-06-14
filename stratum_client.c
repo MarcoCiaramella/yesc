@@ -232,16 +232,16 @@ void* stratum_receiver_thread(void* arg) {
                 printf("New job received: %s\n", client->current_job.job_id);
                 //print_job_details(&client->current_job);
                 
-                // Usa la difficoltà corrente per calcolare il target invece di quello dal job
-                difficulty_to_target(client->current_difficulty, client->current_job.target);
-                printf("Target calcolato dalla difficoltà (%.6f):\n", client->current_difficulty);
+                // Impostiamo sempre il target fisso indipendentemente dalla difficoltà
+                strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
+                printf("Target fisso impostato:\n");
                 print_target(client->current_job.target);
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
-        // Gestione migliorata per mining.set_difficulty
+        // Gestione per mining.set_difficulty - ignoriamo il target inviato dal pool
         else if (strstr(buffer, "mining.set_difficulty") || strstr(buffer, "\"method\":\"mining.set_difficulty\"")) {
-            // Cerchiamo prima il parametro params in formato JSON
+            // Cerchiamo il parametro params in formato JSON solo per mostrare la difficoltà ricevuta
             char* diff_str = NULL;
             
             // Cerca in formato "params":[numero]
@@ -253,23 +253,19 @@ void* stratum_receiver_thread(void* arg) {
                 while (*diff_str && *diff_str != '[') diff_str++;
                 if (*diff_str == '[') diff_str++; // Salta '['
                 
-                // Estrai il valore di difficoltà
+                // Estrai il valore di difficoltà solo per reportistica
                 double new_diff = strtod(diff_str, NULL);
                 if (new_diff > 0) {
                     client->current_difficulty = new_diff;
-                    printf("\033[36mDifficoltà impostata dal pool: %.6f\033[0m\n", client->current_difficulty);
+                    printf("\033[36mDifficoltà ricevuta dal pool: %.6f (ignorata)\033[0m\n", client->current_difficulty);
                     
-                    // Calcola nuovo target basato sulla nuova difficoltà
+                    // Manteniamo il target fisso, ignorando la difficoltà ricevuta
                     pthread_mutex_lock(&client->job_mutex);
-                    difficulty_to_target(new_diff, client->current_job.target);
-                    printf("Nuovo target calcolato:\n");
+                    strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
+                    printf("Target mantenuto fisso:\n");
                     print_target(client->current_job.target);
                     pthread_mutex_unlock(&client->job_mutex);
-                } else {
-                    printf("\033[33mWarning: Ricevuto messaggio set_difficulty con valore non valido\033[0m\n");
                 }
-            } else {
-                printf("\033[33mWarning: Messaggio mining.set_difficulty malformattato\033[0m\n");
             }
         }
         else if (strstr(buffer, "\"result\":true")) {
@@ -505,6 +501,10 @@ void print_job_details(const stratum_job_t* job) {
            job->coinb2[0] ? job->coinb2 : "(empty)",
            strlen(job->coinb2) > 40 ? "..." : "");
     
+    printf("Extranonce1: %s\n", job->extranonce1);
+    printf("Extranonce2 Size: %d\n", job->extranonce2_size);
+    printf("====================\n");
+}
     printf("Extranonce1: %s\n", job->extranonce1);
     printf("Extranonce2 Size: %d\n", job->extranonce2_size);
     printf("====================\n");
