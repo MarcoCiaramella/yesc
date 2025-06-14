@@ -505,7 +505,3 @@ void print_job_details(const stratum_job_t* job) {
     printf("Extranonce2 Size: %d\n", job->extranonce2_size);
     printf("====================\n");
 }
-    printf("Extranonce1: %s\n", job->extranonce1);
-    printf("Extranonce2 Size: %d\n", job->extranonce2_size);
-    printf("====================\n");
-}
