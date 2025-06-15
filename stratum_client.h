@@ -12,6 +12,9 @@
 #define MAX_BUFFER_SIZE 4096
 #define MAX_EXTRANONCE_LEN 32
 #define BLOCK_HEADER_SIZE 80
+#define MAX_JOB_ID_LENGTH 64
+#define MAX_COINBASE_SIZE 256
+#define MAX_MERKLE_BRANCHES 32
 
 typedef struct {
     char pool_url[MAX_URL_LEN];
@@ -22,19 +25,20 @@ typedef struct {
 } mining_config_t;
 
 typedef struct {
-    char job_id[64];
+    char job_id[MAX_JOB_ID_LENGTH];
     char prevhash[65];
-    char coinb1[256];
-    char coinb2[256];
-    char merkle_branches[32][65];
+    char coinb1[MAX_COINBASE_SIZE];
+    char coinb2[MAX_COINBASE_SIZE];
+    char merkle_branches[MAX_MERKLE_BRANCHES][65];
     int merkle_count;
     char version[9];
     char nbits[9];
     char ntime[9];
-    bool clean_jobs;
-    char target[65];
-    char extranonce1[MAX_EXTRANONCE_LEN];
+    char clean_jobs[2];
+    char extranonce1[17];
     int extranonce2_size;
+    char target[65];  // Manteniamo per compatibilità
+    uint32_t target_array[8];  // Nuovo array per il target
 } stratum_job_t;
 
 typedef struct {

@@ -269,9 +269,17 @@ void *stratum_receiver_thread(void *arg)
                 printf("New job received: %s\n", client->current_job.job_id);
                 // print_job_details(&client->current_job);
 
-                // Impostiamo sempre il target fisso indipendentemente dalla difficoltà
+                // Impostiamo il target fisso come array di 8 valori uint32_t
                 strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                // Rimossa la stampa del target
+                // Target fisso [655360,0,0,0,0,0,0,0]
+                client->current_job.target_array[0] = 655360;
+                client->current_job.target_array[1] = 0;
+                client->current_job.target_array[2] = 0;
+                client->current_job.target_array[3] = 0;
+                client->current_job.target_array[4] = 0;
+                client->current_job.target_array[5] = 0;
+                client->current_job.target_array[6] = 0;
+                client->current_job.target_array[7] = 0;
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
@@ -303,7 +311,15 @@ void *stratum_receiver_thread(void *arg)
                     // Manteniamo il target fisso, ignorando la difficoltà ricevuta
                     pthread_mutex_lock(&client->job_mutex);
                     strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                    // Rimossa la stampa del target
+                    // Target fisso [655360,0,0,0,0,0,0,0]
+                    client->current_job.target_array[0] = 655360;
+                    client->current_job.target_array[1] = 0;
+                    client->current_job.target_array[2] = 0;
+                    client->current_job.target_array[3] = 0;
+                    client->current_job.target_array[4] = 0;
+                    client->current_job.target_array[5] = 0;
+                    client->current_job.target_array[6] = 0;
+                    client->current_job.target_array[7] = 0;
                     pthread_mutex_unlock(&client->job_mutex);
                 }
             }
@@ -433,8 +449,8 @@ void *mining_thread(void *arg)
 
             hashes++;
 
-            // Check if hash meets target
-            if (check_target(hash.uc, job_copy.target))
+            // Check if hash meets target using the new array-based function
+            if (check_target_array(hash.uc, job_copy.target_array))
             {
                 // Converti l'hash in formato esadecimale per la stampa
                 char hash_hex[65];
@@ -444,7 +460,6 @@ void *mining_thread(void *arg)
                 hash_hex[64] = '\0';
                 
                 printf("\033[32mFound share!\033[0m Hash: \033[33m%s\033[0m\n", hash_hex);
-                printf("Target: \033[36m%s\033[0m\n", job_copy.target);
                 stratum_submit_share(client, nonce, extranonce2);
             }
 
@@ -511,6 +526,10 @@ bool check(uint32_t *hash, uint32_t *target)
 
 bool check_target(const uint8_t *hash, const char *target_hex)
 {
+    // Ottieni il target array dalla job structure del client
+    // Poiché non abbiamo accesso al client qui, ancora utilizziamo target_hex
+    // ma implementeremo una versione migliore
+
     uint8_t target[32];
     hex_to_bin(target_hex, target, 32);
 
@@ -537,6 +556,23 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     //printf("Target: \033[36m%s\033[0m\n", target_hex);
 
     return check(hash32, (uint32_t *)target);
+}
+
+// Nuova funzione per verificare il target usando direttamente l'array
+bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
+{
+    uint32_t hash32[8];
+    uint32_t *phash = (uint32_t *)hash;
+    hash32[0] = phash[7];
+    hash32[1] = phash[6];
+    hash32[2] = phash[5];
+    hash32[3] = phash[4];
+    hash32[4] = phash[3];
+    hash32[5] = phash[2];
+    hash32[6] = phash[1];
+    hash32[7] = phash[0];
+    
+    return check(hash32, (uint32_t *)target_array);
 }
 
 void hex_to_bin(const char *hex, uint8_t *bin, size_t bin_len)
