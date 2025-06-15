@@ -99,13 +99,13 @@ int main(int argc, char *argv[]) {
     uint32_t* words = (uint32_t*)bytes;
     swap32Arr(words, 8); // 32 byte = 8 uint32_t
     
-    // Stampa il target come stringa esadecimale
-    printf("Target: ");
-    for (int i = 0; i < 32; i++) {
-        printf("%02x", bytes[i]);
-    }
-    printf("\n");
+    // Rimossa la stampa del target
     
+    // Libera la memoria
+    free(targetHex);
+    
+    return 0;
+}
     // Libera la memoria
     free(targetHex);
     

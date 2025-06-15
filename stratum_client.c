@@ -271,8 +271,7 @@ void *stratum_receiver_thread(void *arg)
 
                 // Impostiamo sempre il target fisso indipendentemente dalla difficoltà
                 strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                printf("Target fisso impostato:\n");
-                print_target(client->current_job.target);
+                // Rimossa la stampa del target
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
@@ -304,8 +303,7 @@ void *stratum_receiver_thread(void *arg)
                     // Manteniamo il target fisso, ignorando la difficoltà ricevuta
                     pthread_mutex_lock(&client->job_mutex);
                     strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                    printf("Target mantenuto fisso:\n");
-                    print_target(client->current_job.target);
+                    // Rimossa la stampa del target
                     pthread_mutex_unlock(&client->job_mutex);
                 }
             }
@@ -526,6 +524,17 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     hash32[5] = phash[2];
     hash32[6] = phash[1];
     hash32[7] = phash[0];
+    
+    // Converti l'hash in formato esadecimale per la stampa
+    char hash_hex[65];
+    for (int i = 0; i < 32; i++) {
+        sprintf(&hash_hex[i*2], "%02x", hash[i]);
+    }
+    hash_hex[64] = '\0';
+    
+    // Stampa sia il target che l'hash
+    printf("Hash: \033[33m%s\033[0m\n", hash_hex);
+    printf("Target: \033[36m%s\033[0m\n", target_hex);
 
     return check(hash32, (uint32_t *)target);
 }
