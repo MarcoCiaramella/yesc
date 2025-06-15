@@ -515,7 +515,7 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     hex_to_bin(target_hex, target, 32);
     printf("binary target: ");
     for (int i = 0; i < 32; i++) {
-        printf("%d", target[i]);
+        printf("%u", target[i]);
     }
     printf("\n");
 
