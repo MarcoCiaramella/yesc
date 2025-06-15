@@ -218,11 +218,17 @@ void difficulty_to_target(double difficulty, char *target_hex)
         target_words[i] = swap32(target_words[i]);
     }
 
-    // Converti il target in stringa esadecimale
+    // Converti il target in stringa esadecimale e assicura che sia lungo 64 caratteri
+    char temp_hex[65];
+    int pos = 0;
     for (int i = 0; i < 8; i++)
     {
-        sprintf(target_hex + (i * 8), "%08x", target_words[i]);
+        pos += sprintf(temp_hex + pos, "%08x", target_words[i]);
     }
+    temp_hex[64] = '\0';
+    
+    // Assicura che il target sia di 64 caratteri
+    strncpy(target_hex, temp_hex, 64);
     target_hex[64] = '\0';
 }
 
@@ -432,7 +438,15 @@ void *mining_thread(void *arg)
             // Check if hash meets target
             if (check_target(hash.uc, job_copy.target))
             {
-                printf("Found share! Submitting...\n");
+                // Converti l'hash in formato esadecimale per la stampa
+                char hash_hex[65];
+                for (int i = 0; i < 32; i++) {
+                    sprintf(&hash_hex[i*2], "%02x", hash.uc[i]);
+                }
+                hash_hex[64] = '\0';
+                
+                printf("\033[32mFound share!\033[0m Hash: \033[33m%s\033[0m\n", hash_hex);
+                printf("Target: \033[36m%s\033[0m\n", job_copy.target);
                 stratum_submit_share(client, nonce, extranonce2);
             }
 

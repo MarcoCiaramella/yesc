@@ -218,6 +218,16 @@ void nbits_to_target(const char* nbits_hex, char* target_hex, size_t target_size
         ptr += 2;
     }
     *ptr = '\0';
+    
+    // Assicura che il target sia di 64 caratteri
+    size_t len = strlen(target_hex);
+    if (len < 64) {
+        char temp[65];
+        memset(temp, '0', 64 - len);
+        strcpy(temp + (64 - len), target_hex);
+        strncpy(target_hex, temp, 64);
+        target_hex[64] = '\0';
+    }
 }
 
 char* extract_json_string(const char* json, const char* key) {
