@@ -526,7 +526,7 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     printf("\n");
 
     uint32_t hash32[8];
-    uint32_t *phash = (uint32_t *)&hash;
+    uint32_t *phash = (uint32_t *)hash;
     hash32[0] = phash[7];
     hash32[1] = phash[6];
     hash32[2] = phash[5];
@@ -536,15 +536,15 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     hash32[6] = phash[1];
     hash32[7] = phash[0];
     
-    // Converti l'hash in formato esadecimale per la stampa
+    // Converti hash32 in formato esadecimale per la stampa
     char hash_hex[65];
-    for (int i = 0; i < 32; i++) {
-        sprintf(&hash_hex[i*2], "%02x", hash[i]);
+    for (int i = 0; i < 8; i++) {
+        sprintf(&hash_hex[i*8], "%08x", hash32[i]);
     }
     hash_hex[64] = '\0';
     
-    // Stampa sia il target che l'hash
-    printf("Hash: \033[33m%s\033[0m\n", hash_hex);
+    // Stampa sia il target che l'hash32
+    printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
     printf("Target: \033[36m%s\033[0m\n", target_hex);
 
     return check(hash32, (uint32_t *)target);
