@@ -11,6 +11,9 @@
 #include "stratum_client.h"
 #include "json_parser.h"
 
+// Aggiungo il prototipo della funzione qui
+bool check_target_array(const uint8_t *hash, const uint32_t *target_array);
+
 int stratum_connect(stratum_client_t *client)
 {
     struct hostent *host_entry;
