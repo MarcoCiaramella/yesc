@@ -513,17 +513,6 @@ bool check_target(const uint8_t *hash, const char *target_hex)
 {
     uint8_t target[32];
     hex_to_bin(target_hex, target, 32);
-    printf("binary target: ");
-    for (int i = 0; i < 32; i++) {
-        printf("%u", (unsigned int)target[i]);
-    }
-    printf("\n");
-
-    printf("binary hash: ");
-    for (int i = 0; i < 32; i++) {
-        printf("%u", (unsigned int)hash[i]);
-    }
-    printf("\n");
 
     uint32_t hash32[8];
     uint32_t *phash = (uint32_t *)hash;
@@ -544,8 +533,8 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     hash_hex[64] = '\0';
     
     // Stampa sia il target che l'hash32
-    printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
-    printf("Target: \033[36m%s\033[0m\n", target_hex);
+    //printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
+    //printf("Target: \033[36m%s\033[0m\n", target_hex);
 
     return check(hash32, (uint32_t *)target);
 }
