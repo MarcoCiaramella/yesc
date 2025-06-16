@@ -452,8 +452,6 @@ void *mining_thread(void *arg)
 
             hashes++;
 
-            printf("okk1\n");
-
             // Check if hash meets target using the new array-based function
             if (check_target_array(hash.uc, job_copy.target_array))
             {
@@ -467,8 +465,6 @@ void *mining_thread(void *arg)
                 printf("\033[32mFound share!\033[0m Hash: \033[33m%s\033[0m\n", hash_hex);
                 stratum_submit_share(client, nonce, extranonce2);
             }
-
-            printf("okk2\n");
 
             // Print hashrate every 10 seconds
             if (hashes % 10000 == 0)
