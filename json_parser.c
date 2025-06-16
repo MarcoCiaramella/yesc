@@ -169,9 +169,9 @@ int parse_job_notification(const char* json, stratum_job_t* job) {
     // Extract clean_jobs (boolean)
     params_start = ntime_end + 2;
     if (strstr(params_start, "true")) {
-        job->clean_jobs = true;
+        strcpy(job->clean_jobs, "1"); // Store as string "1" for true
     } else {
-        job->clean_jobs = false;
+        strcpy(job->clean_jobs, "0"); // Store as string "0" for false
     }
     
     // Convert nbits to target (proper conversion)

@@ -654,7 +654,7 @@ void print_job_details(const stratum_job_t *job)
     printf("Version: %s\n", job->version);
     printf("nBits: %s\n", job->nbits);
     printf("nTime: %s\n", job->ntime);
-    printf("Clean Jobs: %s\n", job->clean_jobs ? "true" : "false");
+    printf("Clean Jobs: %s\n", strcmp(job->clean_jobs, "1") == 0 ? "true" : "false");
 
     printf("Merkle Branches: %d branches\n", job->merkle_count);
     for (int i = 0; i < job->merkle_count && i < 5; i++)
