@@ -576,7 +576,7 @@ bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
     hash32[7] = phash[0];
     
     // Converti hash32 in formato esadecimale per la stampa
-    char hash_hex[65];
+    /*char hash_hex[65];
     for (int i = 0; i < 8; i++) {
         sprintf(&hash_hex[i*8], "%08x", hash32[i]);
     }
@@ -591,7 +591,7 @@ bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
     
     // Stampa sia il target che l'hash32
     printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
-    printf("Target: \033[36m%s\033[0m\n", target_hex);
+    printf("Target: \033[36m%s\033[0m\n", target_hex);*/
     
     return check(hash32, (uint32_t *)target_array);
 }
