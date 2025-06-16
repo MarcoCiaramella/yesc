@@ -564,6 +564,7 @@ bool check_target(const uint8_t *hash, const char *target_hex)
 // Nuova funzione per verificare il target usando direttamente l'array
 bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
 {
+    printf("okk\n");
     uint32_t hash32[8];
     uint32_t *phash = (uint32_t *)hash;
     hash32[0] = phash[7];
