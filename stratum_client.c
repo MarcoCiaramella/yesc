@@ -510,10 +510,10 @@ int build_block_header(stratum_client_t *client, uint32_t nonce, uint32_t extran
     return 0;
 }
 
-bool check(uint32_t *hash, uint32_t *target)
+bool check(uint8_t *hash, uint8_t *target)
 {
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 32; i++)
     {
         if (hash[i] < target[i])
         {
@@ -560,7 +560,8 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     // printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
     // printf("Target: \033[36m%s\033[0m\n", target_hex);
 
-    return check(hash32, (uint32_t *)target);
+    //return check(hash32, (uint32_t *)target);
+    return true;
 }
 
 // Nuova funzione per verificare il target usando direttamente l'array
@@ -584,7 +585,7 @@ bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
     printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
     printf("Target: \033[36m%s\033[0m\n", target_hex);*/
 
-    return check((uint32_t *)hash, (uint32_t *)target_array);
+    return check(hash, (uint8_t *)target_array);
 }
 
 void hex_to_bin(const char *hex, uint8_t *bin, size_t bin_len)
