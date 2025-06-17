@@ -229,7 +229,7 @@ void difficulty_to_target(double difficulty, char *target_hex)
         pos += sprintf(temp_hex + pos, "%08x", target_words[i]);
     }
     temp_hex[64] = '\0';
-    
+
     // Assicura che il target sia di 64 caratteri
     strncpy(target_hex, temp_hex, 64);
     target_hex[64] = '\0';
@@ -457,11 +457,12 @@ void *mining_thread(void *arg)
             {
                 // Converti l'hash in formato esadecimale per la stampa
                 char hash_hex[65];
-                for (int i = 0; i < 32; i++) {
-                    sprintf(&hash_hex[i*2], "%02x", hash.uc[i]);
+                for (int i = 0; i < 32; i++)
+                {
+                    sprintf(&hash_hex[i * 2], "%02x", hash.uc[i]);
                 }
                 hash_hex[64] = '\0';
-                
+
                 printf("\033[32mFound share!\033[0m Hash: \033[33m%s\033[0m\n", hash_hex);
                 stratum_submit_share(client, nonce, extranonce2);
             }
@@ -546,17 +547,18 @@ bool check_target(const uint8_t *hash, const char *target_hex)
     hash32[5] = phash[2];
     hash32[6] = phash[1];
     hash32[7] = phash[0];
-    
+
     // Converti hash32 in formato esadecimale per la stampa
     char hash_hex[65];
-    for (int i = 0; i < 8; i++) {
-        sprintf(&hash_hex[i*8], "%08x", hash32[i]);
+    for (int i = 0; i < 8; i++)
+    {
+        sprintf(&hash_hex[i * 8], "%08x", hash32[i]);
     }
     hash_hex[64] = '\0';
-    
+
     // Stampa sia il target che l'hash32
-    //printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
-    //printf("Target: \033[36m%s\033[0m\n", target_hex);
+    // printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
+    // printf("Target: \033[36m%s\033[0m\n", target_hex);
 
     return check(hash32, (uint32_t *)target);
 }
@@ -564,36 +566,25 @@ bool check_target(const uint8_t *hash, const char *target_hex)
 // Nuova funzione per verificare il target usando direttamente l'array
 bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
 {
-    uint32_t hash32[8];
-    uint32_t *phash = (uint32_t *)hash;
-    hash32[0] = phash[7];
-    hash32[1] = phash[6];
-    hash32[2] = phash[5];
-    hash32[3] = phash[4];
-    hash32[4] = phash[3];
-    hash32[5] = phash[2];
-    hash32[6] = phash[1];
-    hash32[7] = phash[0];
-    
     // Converti hash32 in formato esadecimale per la stampa
     /*char hash_hex[65];
     for (int i = 0; i < 8; i++) {
         sprintf(&hash_hex[i*8], "%08x", hash32[i]);
     }
     hash_hex[64] = '\0';
-    
+
     // Converti target_array in formato esadecimale per la stampa
     char target_hex[65];
     for (int i = 0; i < 8; i++) {
         sprintf(&target_hex[i*8], "%08x", target_array[i]);
     }
     target_hex[64] = '\0';
-    
+
     // Stampa sia il target che l'hash32
     printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
     printf("Target: \033[36m%s\033[0m\n", target_hex);*/
-    
-    return check(hash32, (uint32_t *)target_array);
+
+    return check((uint32_t *)hash, (uint32_t *)target_array);
 }
 
 void hex_to_bin(const char *hex, uint8_t *bin, size_t bin_len)
