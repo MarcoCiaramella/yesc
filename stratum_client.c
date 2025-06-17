@@ -11,8 +11,8 @@
 #include "stratum_client.h"
 #include "json_parser.h"
 
-// Aggiungo il prototipo della funzione qui
-bool check_target_array(const uint8_t *hash, const uint32_t *target_array);
+// Modifico il prototipo della funzione
+bool check_target_array(const uint8_t *hash, const uint8_t *target_array);
 
 int stratum_connect(stratum_client_t *client)
 {
@@ -272,17 +272,18 @@ void *stratum_receiver_thread(void *arg)
                 printf("New job received: %s\n", client->current_job.job_id);
                 // print_job_details(&client->current_job);
 
-                // Impostiamo il target fisso come array di 8 valori uint32_t
+                // Impostiamo il target fisso come array di 32 valori uint8_t
                 strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                // Target fisso [655360,0,0,0,0,0,0,0]
-                client->current_job.target_array[0] = 655360;
-                client->current_job.target_array[1] = 0;
-                client->current_job.target_array[2] = 0;
-                client->current_job.target_array[3] = 0;
-                client->current_job.target_array[4] = 0;
-                client->current_job.target_array[5] = 0;
-                client->current_job.target_array[6] = 0;
-                client->current_job.target_array[7] = 0;
+                
+                // Target fisso con i valori specificati
+                uint8_t fixed_target[32] = {
+                    0, 10, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0
+                };
+                
+                memcpy(client->current_job.target_array, fixed_target, 32);
             }
             pthread_mutex_unlock(&client->job_mutex);
         }
@@ -314,15 +315,16 @@ void *stratum_receiver_thread(void *arg)
                     // Manteniamo il target fisso, ignorando la difficoltà ricevuta
                     pthread_mutex_lock(&client->job_mutex);
                     strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");
-                    // Target fisso [655360,0,0,0,0,0,0,0]
-                    client->current_job.target_array[0] = 655360;
-                    client->current_job.target_array[1] = 0;
-                    client->current_job.target_array[2] = 0;
-                    client->current_job.target_array[3] = 0;
-                    client->current_job.target_array[4] = 0;
-                    client->current_job.target_array[5] = 0;
-                    client->current_job.target_array[6] = 0;
-                    client->current_job.target_array[7] = 0;
+                    
+                    // Target fisso con i valori specificati
+                    uint8_t fixed_target[32] = {
+                        0, 10, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0, 0, 0, 0, 0,
+                        0, 0, 0, 0, 0
+                    };
+                    
+                    memcpy(client->current_job.target_array, fixed_target, 32);
                     pthread_mutex_unlock(&client->job_mutex);
                 }
             }
@@ -529,26 +531,8 @@ bool check(uint8_t *hash, uint8_t *target)
 }
 
 // Nuova funzione per verificare il target usando direttamente l'array
-bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
+bool check_target_array(const uint8_t *hash, const uint8_t *target_array)
 {
-    // Converti hash32 in formato esadecimale per la stampa
-    /*char hash_hex[65];
-    for (int i = 0; i < 8; i++) {
-        sprintf(&hash_hex[i*8], "%08x", hash32[i]);
-    }
-    hash_hex[64] = '\0';
-
-    // Converti target_array in formato esadecimale per la stampa
-    char target_hex[65];
-    for (int i = 0; i < 8; i++) {
-        sprintf(&target_hex[i*8], "%08x", target_array[i]);
-    }
-    target_hex[64] = '\0';
-
-    // Stampa sia il target che l'hash32
-    printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
-    printf("Target: \033[36m%s\033[0m\n", target_hex);*/
-
     return check(hash, (uint8_t *)target_array);
 }
 

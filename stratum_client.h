@@ -38,7 +38,7 @@ typedef struct {
     char extranonce1[17];
     int extranonce2_size;
     char target[65];  // Manteniamo per compatibilità
-    uint32_t target_array[8];  // Nuovo array per il target
+    uint8_t target_array[32];  // Array modificato a 32 byte
 } stratum_job_t;
 
 typedef struct {
