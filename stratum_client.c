@@ -270,7 +270,7 @@ void *stratum_receiver_thread(void *arg)
             {
                 client->new_job = true;
                 printf("New job received: %s\n", client->current_job.job_id);
-                // print_job_details(&client->current_job);
+                print_job_details(&client->current_job);
 
                 // Impostiamo il target fisso come array di 32 valori uint8_t
                 strcpy(client->current_job.target, "00000a0000000000000000000000000000000000000000000000000000000000");

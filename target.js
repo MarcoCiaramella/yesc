@@ -26,3 +26,9 @@ function calcTarget(miningDiff) {
 const target = hex2Uint8Array(calcTarget(parseFloat(process.argv[2])));
 console.log(target);
 console.log("Target: " + Array.from(target).map(b => b.toString(16).padStart(2, '0')).join(''));
+
+
+/**
+ * 
+ * {"job_id":"21f41","extranonce2":"00000001","ntime":"685131a2","nonce":"00002fcc"}
+ */
