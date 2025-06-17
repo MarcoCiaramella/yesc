@@ -528,42 +528,6 @@ bool check(uint8_t *hash, uint8_t *target)
     return false;
 }
 
-bool check_target(const uint8_t *hash, const char *target_hex)
-{
-    // Ottieni il target array dalla job structure del client
-    // Poiché non abbiamo accesso al client qui, ancora utilizziamo target_hex
-    // ma implementeremo una versione migliore
-
-    uint8_t target[32];
-    hex_to_bin(target_hex, target, 32);
-
-    uint32_t hash32[8];
-    uint32_t *phash = (uint32_t *)hash;
-    hash32[0] = phash[7];
-    hash32[1] = phash[6];
-    hash32[2] = phash[5];
-    hash32[3] = phash[4];
-    hash32[4] = phash[3];
-    hash32[5] = phash[2];
-    hash32[6] = phash[1];
-    hash32[7] = phash[0];
-
-    // Converti hash32 in formato esadecimale per la stampa
-    char hash_hex[65];
-    for (int i = 0; i < 8; i++)
-    {
-        sprintf(&hash_hex[i * 8], "%08x", hash32[i]);
-    }
-    hash_hex[64] = '\0';
-
-    // Stampa sia il target che l'hash32
-    // printf("Hash32: \033[33m%s\033[0m\n", hash_hex);
-    // printf("Target: \033[36m%s\033[0m\n", target_hex);
-
-    //return check(hash32, (uint32_t *)target);
-    return true;
-}
-
 // Nuova funzione per verificare il target usando direttamente l'array
 bool check_target_array(const uint8_t *hash, const uint32_t *target_array)
 {

@@ -67,7 +67,6 @@ int stratum_submit_share(stratum_client_t* client, uint32_t nonce, uint32_t extr
 void* stratum_receiver_thread(void* arg);
 void* mining_thread(void* arg);
 int build_block_header(stratum_client_t* client, uint32_t nonce, uint32_t extranonce2, uint8_t* header);
-bool check_target(const uint8_t* hash, const char* target_hex);
 void hex_to_bin(const char* hex, uint8_t* bin, size_t bin_len);
 void bin_to_hex(const uint8_t* bin, char* hex, size_t bin_len);
 void print_target(const char* target_hex);
