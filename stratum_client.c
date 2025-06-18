@@ -597,25 +597,13 @@ void print_job_details(const stratum_job_t *job)
     printf("Clean Jobs: %s\n", strcmp(job->clean_jobs, "1") == 0 ? "true" : "false");
 
     printf("Merkle Branches: %d branches\n", job->merkle_count);
-    for (int i = 0; i < job->merkle_count && i < 5; i++)
+    for (int i = 0; i < job->merkle_count; i++)
     {
         printf("  [%d]: %s\n", i, job->merkle_branches[i]);
     }
-    if (job->merkle_count > 5)
-    {
-        printf("  ... and %d more branches\n", job->merkle_count - 5);
-    }
 
-    printf("Coinb1 (first %d chars): %.40s%s\n",
-           job->coinb1[0] ? 40 : 0,
-           job->coinb1[0] ? job->coinb1 : "(empty)",
-           strlen(job->coinb1) > 40 ? "..." : "");
-
-    printf("Coinb2 (first %d chars): %.40s%s\n",
-           job->coinb2[0] ? 40 : 0,
-           job->coinb2[0] ? job->coinb2 : "(empty)",
-           strlen(job->coinb2) > 40 ? "..." : "");
-
+    printf("Coinb1: %s\n", job->coinb1[0] ? job->coinb1 : "(empty)");
+    printf("Coinb2: %s\n", job->coinb2[0] ? job->coinb2 : "(empty)");
     printf("Extranonce1: %s\n", job->extranonce1);
     printf("Extranonce2 Size: %d\n", job->extranonce2_size);
     printf("====================\n");
