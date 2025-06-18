@@ -452,6 +452,27 @@ void *mining_thread(void *arg)
                 continue;
             }
 
+            // Stampa block_header in esadecimale, extranonce2, nonce e hash
+            char header_hex[BLOCK_HEADER_SIZE * 2 + 1];
+            char hash_hex[65];
+            
+            // Converti block_header in formato esadecimale
+            for (int i = 0; i < BLOCK_HEADER_SIZE; i++) {
+                sprintf(&header_hex[i * 2], "%02x", block_header[i]);
+            }
+            header_hex[BLOCK_HEADER_SIZE * 2] = '\0';
+            
+            // Converti hash in formato esadecimale
+            for (int i = 0; i < 32; i++) {
+                sprintf(&hash_hex[i * 2], "%02x", hash.uc[i]);
+            }
+            hash_hex[64] = '\0';
+            
+            printf("Block Header: %s\n", header_hex);
+            printf("Extranonce2: %08x\n", extranonce2);
+            printf("Nonce: %08x\n", nonce);
+            printf("Hash: %s\n", hash_hex);
+
             hashes++;
 
             // Check if hash meets target using the new array-based function
